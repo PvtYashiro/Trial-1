@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Block Blast - Fixed Paddle</title>
+    <title>Block Blast ❤️</title>
     <style>
         body {
             text-align: center;
-            background-color: #222;
-            color: white;
+            background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+            color: black;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            margin: 0;
         }
         canvas {
-            background: black;
+            background: #fff;
             display: block;
             margin: auto;
             touch-action: none;
+            border-radius: 10px;
         }
         .menu {
             display: flex;
@@ -29,36 +31,48 @@
             display: none;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 20px;
             font-size: 20px;
             cursor: pointer;
-            background-color: #ff5733;
+            background-color: #ff4d79;
             border: none;
             color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             margin: 10px;
         }
         .exit-button {
             background-color: #d9534f;
         }
+        .heart {
+            position: absolute;
+            color: rgba(255, 0, 0, 0.8);
+            font-size: 30px;
+            animation: floatUp 5s infinite;
+        }
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <!-- Main Menu -->
     <div id="menu" class="menu">
-        <h1>Block Blast</h1>
+        <h1>Block Blast ❤️</h1>
+        <p>Win my heart by breaking all the blocks! 💕</p>
         <button onclick="startGame()">Start Game</button>
         <button class="exit-button" onclick="exitGame()">Exit</button>
     </div>
-
-    <!-- Game Container -->
     <div id="gameContainer" class="hidden">
-        <h1>Block Blast</h1>
+        <h1>Block Blast ❤️</h1>
         <p>Level: <span id="level">1</span> | Lives: <span id="lives">3</span></p>
         <canvas id="gameCanvas" width="480" height="320"></canvas>
     </div>
-
     <script>
         const menu = document.getElementById("menu");
         const gameContainer = document.getElementById("gameContainer");
@@ -67,12 +81,11 @@
         const levelDisplay = document.getElementById("level");
         const livesDisplay = document.getElementById("lives");
 
-        let ballX, ballY, ballDX, ballDY, ballRadius;
-        let paddleHeight = 10, paddleWidth = 75, paddleX;
+        let ballX, ballY, ballDX, ballDY, ballRadius, paddleHeight, paddleWidth, paddleX;
         let rightPressed = false, leftPressed = false;
         let level = 1, maxLevels = 3, lives = 3;
+        let brickRowCount, brickColumnCount = 5, brickWidth = 75, brickHeight = 20, brickPadding = 10, brickOffsetTop = 30, brickOffsetLeft = 30;
         let bricks = [];
-        let brickColumnCount = 5, brickWidth = 75, brickHeight = 20, brickPadding = 10, brickOffsetTop = 30, brickOffsetLeft = 30;
 
         function initializeGame() {
             ballX = canvas.width / 2;
@@ -80,16 +93,19 @@
             ballDX = 2;
             ballDY = -2;
             ballRadius = 10;
+            paddleHeight = 10;
+            paddleWidth = 75;
             paddleX = (canvas.width - paddleWidth) / 2;
+            brickRowCount = level + 1;
             initializeBricks();
             draw();
         }
 
         function initializeBricks() {
             bricks = [];
-            for (let c = 0; c < brickColumnCount; c++) {
+            for(let c = 0; c < brickColumnCount; c++) {
                 bricks[c] = [];
-                for (let r = 0; r < level + 1; r++) {
+                for(let r = 0; r < brickRowCount; r++) {
                     let brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
                     let brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
                     bricks[c][r] = { x: brickX, y: brickY, status: 1 };
@@ -106,105 +122,55 @@
         function exitGame() {
             let confirmExit = confirm("Are you sure you want to exit?");
             if (confirmExit) {
-                window.close();
-                alert("Your browser does not support closing via script. Please close manually.");
+                alert("Come back soon to win my heart! ❤️");
+                document.location.reload();
+            }
+        }
+
+        function drawBricks() {
+            let allCleared = true;
+            for(let c = 0; c < brickColumnCount; c++) {
+                for(let r = 0; r < brickRowCount; r++) {
+                    if (bricks[c][r].status === 1) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(bricks[c][r].x, bricks[c][r].y, brickWidth, brickHeight);
+                        allCleared = false;
+                    }
+                }
+            }
+            if (allCleared) {
+                if (level < maxLevels) {
+                    alert("You cleared this level! Ready for the next challenge? ❤️");
+                    level++;
+                    levelDisplay.textContent = level;
+                    initializeGame();
+                } else {
+                    alert("You won my heart! ❤️ Congratulations!");
+                    document.location.reload();
+                }
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBricks();
-            drawBall();
-            drawPaddle();
-            collisionDetection();
-
-            if (ballX + ballDX > canvas.width - ballRadius || ballX + ballDX < ballRadius) ballDX = -ballDX;
-            if (ballY + ballDY < ballRadius) ballDY = -ballDY;
-            else if (ballY + ballDY > canvas.height - paddleHeight - ballRadius) {
-                if (ballX > paddleX && ballX < paddleX + paddleWidth) {
-                    ballDY = -ballDY;
-                } else {
-                    lives--;
-                    livesDisplay.textContent = lives;
-                    if (lives === 0) {
-                        alert("Game Over!");
-                        document.location.reload();
-                    } else {
-                        ballX = canvas.width / 2;
-                        ballY = canvas.height - 30;
-                        ballDX = 2;
-                        ballDY = -2;
-                    }
-                }
-            }
-
-            ballX += ballDX;
-            ballY += ballDY;
             requestAnimationFrame(draw);
         }
 
-        function drawBricks() {
-            for (let c = 0; c < brickColumnCount; c++) {
-                for (let r = 0; r < level + 1; r++) {
-                    if (bricks[c][r].status === 1) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(bricks[c][r].x, bricks[c][r].y, brickWidth, brickHeight);
-                    }
-                }
-            }
+        function createHearts() {
+            setInterval(() => {
+                let heart = document.createElement("div");
+                heart.classList.add("heart");
+                heart.innerHTML = "❤️";
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.animationDuration = (Math.random() * 3 + 2) + "s";
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 5000);
+            }, 300);
         }
 
-        function drawBall() {
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "white";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawPaddle() {
-            ctx.fillStyle = "blue";
-            ctx.fillRect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
-        }
-
-        function collisionDetection() {
-            for (let c = 0; c < brickColumnCount; c++) {
-                for (let r = 0; r < level + 1; r++) {
-                    let brick = bricks[c][r];
-                    if (brick.status === 1) {
-                        if (ballX > brick.x && ballX < brick.x + brickWidth && ballY > brick.y && ballY < brick.y + brickHeight) {
-                            ballDY = -ballDY;
-                            brick.status = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowRight") rightPressed = true;
-            if (event.key === "ArrowLeft") leftPressed = true;
-        });
-
-        document.addEventListener("keyup", (event) => {
-            if (event.key === "ArrowRight") rightPressed = false;
-            if (event.key === "ArrowLeft") leftPressed = false;
-        });
-
-        document.addEventListener("mousemove", (event) => {
-            let relativeX = event.clientX - canvas.offsetLeft;
-            if (relativeX > 0 && relativeX < canvas.width) {
-                paddleX = relativeX - paddleWidth / 2;
-            }
-        });
-
-        function updatePaddle() {
-            if (rightPressed) paddleX = Math.min(canvas.width - paddleWidth, paddleX + 5);
-            if (leftPressed) paddleX = Math.max(0, paddleX - 5);
-            requestAnimationFrame(updatePaddle);
-        }
-
-        updatePaddle();
+        window.onload = createHearts;
     </script>
 </body>
 </html>
+
