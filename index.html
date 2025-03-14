@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Block Blast & Love Prompt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Blast + Love Prompt</title>
     <style>
         body {
             text-align: center;
@@ -11,7 +11,6 @@
             color: white;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            margin: 0;
         }
         canvas {
             background: #000;
@@ -42,40 +41,59 @@
         .exit-button {
             background-color: #d9534f;
         }
-        .touch-controls {
+        /* Love Prompt */
+        .love-container {
             display: flex;
-            justify-content: space-between;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 50px;
-            background: rgba(0, 0, 0, 0.5);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: pink;
         }
-        .touch-left, .touch-right {
-            flex: 1;
-            height: 100%;
+        #yesButton {
+            font-size: 20px;
+            padding: 10px;
+            transition: 0.3s;
+        }
+        #noButton {
+            position: absolute;
+            font-size: 20px;
+            padding: 10px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <!-- Main Menu -->
     <div id="menu" class="menu">
         <h1>Block Blast</h1>
         <button onclick="startGame()">Start Game</button>
         <button class="exit-button" onclick="openLovePrompt()">Exit</button>
     </div>
+
+    <!-- Game Container -->
     <div id="gameContainer" class="hidden">
         <h1>Block Blast</h1>
         <p>Level: <span id="level">1</span> | Lives: <span id="lives">3</span></p>
         <canvas id="gameCanvas" width="480" height="320"></canvas>
-        <div class="touch-controls">
-            <div class="touch-left" ontouchstart="leftPressed = true" ontouchend="leftPressed = false"></div>
-            <div class="touch-right" ontouchstart="rightPressed = true" ontouchend="rightPressed = false"></div>
+    </div>
+
+    <!-- Love Prompt -->
+    <div id="lovePrompt" class="hidden love-container">
+        <h1>Can I court you? ❤️</h1>
+        <div>
+            <button id="yesButton" onclick="sayYes()">Yes 💖</button>
+            <button id="noButton" onmouseover="moveNoButton()">No 😢</button>
         </div>
     </div>
 
     <script>
         const menu = document.getElementById("menu");
         const gameContainer = document.getElementById("gameContainer");
+        const lovePrompt = document.getElementById("lovePrompt");
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const levelDisplay = document.getElementById("level");
@@ -98,6 +116,9 @@
             paddleX = (canvas.width - paddleWidth) / 2;
             brickRowCount = level + 1;
             initializeBricks();
+            document.addEventListener("keydown", keyDownHandler);
+            document.addEventListener("keyup", keyUpHandler);
+            canvas.addEventListener("touchmove", touchMoveHandler);
             draw();
         }
 
@@ -117,23 +138,6 @@
             menu.classList.add("hidden");
             gameContainer.classList.remove("hidden");
             initializeGame();
-            document.addEventListener("keydown", keyDownHandler);
-            document.addEventListener("keyup", keyUpHandler);
-        }
-
-        function keyDownHandler(event) {
-            if (event.key === "ArrowRight") rightPressed = true;
-            if (event.key === "ArrowLeft") leftPressed = true;
-        }
-
-        function keyUpHandler(event) {
-            if (event.key === "ArrowRight") rightPressed = false;
-            if (event.key === "ArrowLeft") leftPressed = false;
-        }
-
-        function drawPaddle() {
-            ctx.fillStyle = "blue";
-            ctx.fillRect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
         }
 
         function drawBricks() {
@@ -145,6 +149,19 @@
                     }
                 }
             }
+        }
+
+        function drawPaddle() {
+            ctx.fillStyle = "blue";
+            ctx.fillRect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
         }
 
         function collisionDetection() {
@@ -161,46 +178,48 @@
             }
         }
 
-        function drawBall() {
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "white";
-            ctx.fill();
-            ctx.closePath();
-        }
-
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBricks();
             drawBall();
             drawPaddle();
             collisionDetection();
-
             ballX += ballDX;
             ballY += ballDY;
             requestAnimationFrame(draw);
         }
 
+        function keyDownHandler(event) {
+            if (event.key === "ArrowRight") rightPressed = true;
+            if (event.key === "ArrowLeft") leftPressed = true;
+        }
+
+        function keyUpHandler(event) {
+            if (event.key === "ArrowRight") rightPressed = false;
+            if (event.key === "ArrowLeft") leftPressed = false;
+        }
+
+        function touchMoveHandler(event) {
+            let touchX = event.touches[0].clientX;
+            paddleX = Math.min(canvas.width - paddleWidth, Math.max(0, touchX - paddleWidth / 2));
+        }
+
         function openLovePrompt() {
-            document.body.innerHTML = `
-                <div style="text-align:center; background:pink; height:100vh;">
-                    <h1>Can I court you? ❤️</h1>
-                    <button id="yesButton" onclick="sayYes()">Yes 💖</button>
-                    <button id="noButton" onmouseover="moveNoButton()">No 😢</button>
-                </div>
-            `;
+            menu.classList.add("hidden");
+            gameContainer.classList.add("hidden");
+            lovePrompt.classList.remove("hidden");
+        }
 
-            let yesSize = 20;
-            window.moveNoButton = function () {
-                yesSize += 5;
-                document.getElementById("yesButton").style.fontSize = `${yesSize}px`;
-            };
+        function sayYes() {
+            document.body.innerHTML = `<h1 style="color: red;">Yay! You said Yes! ❤️</h1>`;
+        }
 
-            window.sayYes = function () {
-                document.body.innerHTML = `<h1 style="color: red;">Yay! You said Yes! ❤️</h1>`;
-            };
+        function moveNoButton() {
+            let btn = document.getElementById("noButton");
+            btn.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+            btn.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+            document.getElementById("yesButton").style.fontSize = `${parseInt(getComputedStyle(yesButton).fontSize) + 5}px`;
         }
     </script>
 </body>
 </html>
-
