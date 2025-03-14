@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Block Blast</title>
     <style>
         body {
@@ -11,6 +11,7 @@
             color: white;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            margin: 0;
         }
         canvas {
             background: #000;
@@ -41,6 +42,19 @@
         .exit-button {
             background-color: #d9534f;
         }
+        .touch-controls {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .touch-left, .touch-right {
+            flex: 1;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -53,6 +67,10 @@
         <h1>Block Blast</h1>
         <p>Level: <span id="level">1</span> | Lives: <span id="lives">3</span></p>
         <canvas id="gameCanvas" width="480" height="320"></canvas>
+        <div class="touch-controls">
+            <div class="touch-left" ontouchstart="leftPressed = true" ontouchend="leftPressed = false"></div>
+            <div class="touch-right" ontouchstart="rightPressed = true" ontouchend="rightPressed = false"></div>
+        </div>
     </div>
 
     <script>
@@ -99,8 +117,6 @@
             menu.classList.add("hidden");
             gameContainer.classList.remove("hidden");
             initializeGame();
-
-            // Add key event listeners when game starts
             document.addEventListener("keydown", keyDownHandler);
             document.addEventListener("keyup", keyUpHandler);
         }
@@ -204,11 +220,6 @@
 
             let yesSize = 20;
             window.moveNoButton = function () {
-                let noButton = document.getElementById("noButton");
-                noButton.style.position = "absolute";
-                noButton.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-                noButton.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-                
                 yesSize += 5;
                 document.getElementById("yesButton").style.fontSize = `${yesSize}px`;
             };
