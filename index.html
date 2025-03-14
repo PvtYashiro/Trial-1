@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Block Blast</title>
+    <title>Block Blast & Love Prompt</title>
     <style>
         body {
             text-align: center;
@@ -176,32 +176,6 @@
             drawPaddle();
             collisionDetection();
 
-            if (ballX + ballDX > canvas.width - ballRadius || ballX + ballDX < ballRadius) {
-                ballDX = -ballDX;
-            }
-            if (ballY + ballDY < ballRadius) {
-                ballDY = -ballDY;
-            } else if (ballY + ballDY > canvas.height - paddleHeight - ballRadius) {
-                if (ballX > paddleX && ballX < paddleX + paddleWidth) {
-                    ballDY = -ballDY;
-                } else {
-                    lives--;
-                    livesDisplay.textContent = lives;
-                    if (lives === 0) {
-                        alert("Game Over!");
-                        document.location.reload();
-                    } else {
-                        ballX = canvas.width / 2;
-                        ballY = canvas.height - 30;
-                        ballDX = 2;
-                        ballDY = -2;
-                    }
-                }
-            }
-
-            if (rightPressed) paddleX = Math.min(canvas.width - paddleWidth, paddleX + 7);
-            if (leftPressed) paddleX = Math.max(0, paddleX - 7);
-
             ballX += ballDX;
             ballY += ballDY;
             requestAnimationFrame(draw);
@@ -209,12 +183,10 @@
 
         function openLovePrompt() {
             document.body.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: pink;">
+                <div style="text-align:center; background:pink; height:100vh;">
                     <h1>Can I court you? ❤️</h1>
-                    <div style="display: flex; gap: 20px;">
-                        <button id="yesButton" onclick="sayYes()" style="font-size: 20px;">Yes 💖</button>
-                        <button id="noButton" onmouseover="moveNoButton()">No 😢</button>
-                    </div>
+                    <button id="yesButton" onclick="sayYes()">Yes 💖</button>
+                    <button id="noButton" onmouseover="moveNoButton()">No 😢</button>
                 </div>
             `;
 
@@ -231,3 +203,4 @@
     </script>
 </body>
 </html>
+
